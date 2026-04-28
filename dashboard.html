@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hugo - Bittensor Trading Bot</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0e14;
+    --bg-card: #111820;
+    --bg-card-hover: #161e28;
+    --border: #1e2a38;
+    --text: #c5cdd8;
+    --text-dim: #6b7a8d;
+    --text-bright: #e8ecf1;
+    --green: #00e396;
+    --green-dim: #00e39622;
+    --red: #ff4d6a;
+    --red-dim: #ff4d6a22;
+    --blue: #3b82f6;
+    --amber: #f59e0b;
+    --tao: #f97316;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    color: var(--tao);
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  .header h1 span { color: var(--text-dim); font-weight: 400; font-size: 14px; margin-left: 12px; }
+
+  .header .status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .header .status .dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    margin-right: 6px;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+
+  .stat-card .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+
+  .stat-card .value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-bright);
+  }
+
+  .stat-card .sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    margin-top: 4px;
+  }
+
+  .positive { color: var(--green); }
+  .negative { color: var(--red); }
+
+  .section { margin-bottom: 32px; }
+
+  .section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-dim);
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+  }
+
+  th.right, td.right { text-align: right; }
+
+  td {
+    font-family: 'JetBrains Mono', monospace;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    font-size: 12px;
+  }
+
+  tr:hover { background: var(--bg-card-hover); }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .tag-buy { background: var(--green-dim); color: var(--green); }
+  .tag-sell { background: var(--red-dim); color: var(--red); }
+
+  .score-bar {
+    display: inline-block;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--border);
+    width: 60px;
+    position: relative;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+
+  .score-bar-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    border-radius: 3px;
+    background: var(--tao);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 48px;
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  @media (max-width: 900px) {
+    .two-col { grid-template-columns: 1fr; }
+    body { padding: 12px; }
+  }
+
+  .refresh-note {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: center;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>HUGO <span>Bittensor Best-of-All Trader</span></h1>
+  <div class="status"><span class="dot"></span> Paper Trading &mdash; <span id="lastUpdate">loading...</span></div>
+</div>
+
+<div class="stats-grid" id="statsGrid">
+  <div class="stat-card">
+    <div class="label">Portfolio Value</div>
+    <div class="value" id="totalValue">--</div>
+    <div class="sub" id="totalValueUsd">--</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">P&amp;L</div>
+    <div class="value" id="pnlValue">--</div>
+    <div class="sub" id="pnlPct">--</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">TAO Balance</div>
+    <div class="value" id="taoBalance">--</div>
+    <div class="sub">Available cash</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Positions</div>
+    <div class="value" id="numPositions">--</div>
+    <div class="sub">of 5 max</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Starting Balance</div>
+    <div class="value" id="startBalance">--</div>
+    <div class="sub">Paper trading</div>
+  </div>
+</div>
+
+<div class="stat-card" style="grid-column: 1 / -1; background: linear-gradient(135deg, var(--bg-card) 0%, #0d1a2a 100%);">
+  <div class="label">Strategy: Best-of-All (Joshua + Adina + Watchman)</div>
+  <div style="font-size: 13px; line-height: 1.7; margin-top: 8px; color: var(--text);">Hugo combines Joshua scoring with Adina filters and a Watchman gate at 40+. Higher entry bar at 0.65 with fewer, higher conviction positions.</div>
+</div>
+
+<div class="section">
+  <div class="section-title">Open Positions</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Subnet</th>
+        <th>Name</th>
+        <th class="right">Alpha</th>
+        <th class="right">Entry</th>
+        <th class="right">Current</th>
+        <th class="right">Value (TAO)</th>
+        <th class="right">P&amp;L</th>
+        <th>Since</th>
+      </tr>
+    </thead>
+    <tbody id="positionsBody">
+      <tr><td colspan="8" class="empty-state">No positions yet</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="two-col">
+  <div class="section">
+    <div class="section-title">Recent Trades</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Action</th>
+          <th>Subnet</th>
+          <th class="right">TAO</th>
+          <th class="right">Price</th>
+          <th>Reason</th>
+        </tr>
+      </thead>
+      <tbody id="tradesBody">
+        <tr><td colspan="6" class="empty-state">No trades yet</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Top Screener Picks</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Subnet</th>
+          <th>Name</th>
+          <th class="right">Score</th>
+          <th class="right">7d %</th>
+          <th class="right">Pool</th>
+        </tr>
+      </thead>
+      <tbody id="screenerBody">
+        <tr><td colspan="5" class="empty-state">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="refresh-note">Auto-refreshes every 60 seconds &mdash; Hugo trades every 30 minutes</div>
+
+<script>
+  const TAO_USD = 270; // approximate, update as needed
+
+  async function fetchJSON(url) {
+    try {
+      const r = await fetch(url);
+      return await r.json();
+    } catch (e) {
+      console.error('Fetch error:', url, e);
+      return null;
+    }
+  }
+
+  function fmt(n, d=2) { return n != null ? n.toFixed(d) : '--'; }
+  function fmtPct(n) { return n != null ? (n >= 0 ? '+' : '') + n.toFixed(1) + '%' : '--'; }
+  function pnlClass(n) { return n >= 0 ? 'positive' : 'negative'; }
+  function timeAgo(ts) {
+    if (!ts) return '--';
+    const d = new Date(ts);
+    const now = new Date();
+    const mins = Math.floor((now - d) / 60000);
+    if (mins < 60) return mins + 'm ago';
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + 'h ago';
+    return Math.floor(hrs / 24) + 'd ago';
+  }
+
+  async function refresh() {
+    // Portfolio
+    const p = await fetchJSON('/api/portfolio');
+    if (p) {
+      document.getElementById('totalValue').textContent = fmt(p.total_value) + ' TAO';
+      document.getElementById('totalValueUsd').textContent = '~$' + fmt(p.total_value * TAO_USD, 0);
+      document.getElementById('totalValueUsd').className = 'sub';
+
+      const pnlEl = document.getElementById('pnlValue');
+      pnlEl.textContent = (p.pnl_tao >= 0 ? '+' : '') + fmt(p.pnl_tao) + ' TAO';
+      pnlEl.className = 'value ' + pnlClass(p.pnl_tao);
+
+      const pctEl = document.getElementById('pnlPct');
+      pctEl.textContent = fmtPct(p.pnl_pct);
+      pctEl.className = 'sub ' + pnlClass(p.pnl_pct);
+
+      document.getElementById('taoBalance').textContent = fmt(p.balance) + ' TAO';
+      document.getElementById('numPositions').textContent = p.num_positions;
+      document.getElementById('startBalance').textContent = fmt(p.starting_balance) + ' TAO';
+
+      // Positions table
+      const tbody = document.getElementById('positionsBody');
+      if (p.positions.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No positions yet</td></tr>';
+      } else {
+        tbody.innerHTML = p.positions.map(pos => `
+          <tr>
+            <td>SN${pos.netuid}</td>
+            <td>${pos.name}</td>
+            <td class="right">${fmt(pos.alpha_amount, 0)}</td>
+            <td class="right">${fmt(pos.entry_price, 6)}</td>
+            <td class="right">${fmt(pos.current_price, 6)}</td>
+            <td class="right">${fmt(pos.value_tao)}</td>
+            <td class="right ${pnlClass(pos.pnl_pct)}">${fmtPct(pos.pnl_pct)}</td>
+            <td>${timeAgo(pos.entry_timestamp)}</td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    // Trades
+    const trades = await fetchJSON('/api/trades');
+    if (trades) {
+      const tbody = document.getElementById('tradesBody');
+      if (trades.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No trades yet</td></tr>';
+      } else {
+        tbody.innerHTML = trades.slice(0, 15).map(t => `
+          <tr>
+            <td>${timeAgo(t.timestamp)}</td>
+            <td><span class="tag ${t.direction === 'BUY' ? 'tag-buy' : 'tag-sell'}">${t.direction}</span></td>
+            <td>SN${t.netuid} ${t.subnet_name || ''}</td>
+            <td class="right">${fmt(t.amount_tao)}</td>
+            <td class="right">${fmt(t.price_tao, 6)}</td>
+            <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.reason || ''}</td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    // Screener
+    const screener = await fetchJSON('/api/screener');
+    if (screener) {
+      const tbody = document.getElementById('screenerBody');
+      tbody.innerHTML = screener.slice(0, 10).map(s => `
+        <tr>
+          <td>SN${s.netuid}</td>
+          <td>${s.name}</td>
+          <td class="right">
+            <span class="score-bar"><span class="score-bar-fill" style="width:${s.score * 100}%"></span></span>
+            ${fmt(s.score, 3)}
+          </td>
+          <td class="right ${pnlClass(s.price_change_1w)}">${fmtPct(s.price_change_1w)}</td>
+          <td class="right">${fmt(s.pool_tao, 0)}T</td>
+        </tr>
+      `).join('');
+    }
+
+    document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+  }
+
+  // Initial load + auto refresh
+  refresh();
+  setInterval(refresh, 60000);
+</script>
+</body>
+</html>
