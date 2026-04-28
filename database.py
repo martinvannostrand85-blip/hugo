@@ -1,5 +1,5 @@
 """
-Project Gordy - Database Layer
+Project Hugo - Database Layer
 SQLite database for storing subnet snapshots, price history, portfolio, and trades.
 """
 

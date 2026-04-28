@@ -1,5 +1,5 @@
 """
-Project Gordy - Dashboard Server
+Project Hugo - Dashboard Server
 Flask app serving a live dashboard for the paper trading bot.
 Run: python dashboard.py
 View: http://localhost:5555

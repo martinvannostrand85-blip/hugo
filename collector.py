@@ -1,5 +1,5 @@
 """
-Project Gordy - Data Collector
+Project Hugo - Data Collector
 Pulls subnet data from Taostats API and stores in local database.
 Designed to stay within free tier: 5 calls/min, 10k calls/month.
 """

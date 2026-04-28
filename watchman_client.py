@@ -43,4 +43,4 @@ def get_recommendation(bot_name):
     except Exception as e:
         print(f"[WATCHMAN] Unreachable for {bot_name} ({e}), using defaults")
 
-    return {"max_positions": 8, "entry_multiplier": 1.0, "mode": "NORMAL"}
+    return {"max_positions": 5, "entry_multiplier": 1.0, "mode": "NORMAL"}
