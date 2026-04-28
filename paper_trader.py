@@ -12,7 +12,7 @@ from config import (
     STARTING_BALANCE_TAO, MAX_POSITIONS, MAX_POSITION_PCT,
     RESERVE_PCT, MAX_TRADES_PER_CYCLE, MAX_TRADES_PER_DAY,
     MIN_SCORE_ENTRY, MAX_SLIPPAGE_PCT, RAO_PER_TAO,
-    WATCHMAN_MIN_SCORE
+    WATCHMAN_MIN_SCORE, SUBNET_BLACKLIST
 )
 
 BOT_NAME = "HUGO"
@@ -416,6 +416,7 @@ class PaperTrader:
         else:
             candidates = [s for s in scored
                           if s["netuid"] not in held_netuids
+                          and s["netuid"] not in SUBNET_BLACKLIST
                           and s["score"] >= entry_threshold
                           and not self._is_on_cooldown(s["netuid"], now)]
 

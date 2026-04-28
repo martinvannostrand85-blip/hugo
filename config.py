@@ -62,6 +62,9 @@ COOLDOWN_DAYS = 5
 # Watchman gate - only trade when regime score >= 40
 WATCHMAN_MIN_SCORE = 40
 
+# Subnet blacklist - skip these netuids entirely
+SUBNET_BLACKLIST = [111]
+
 # Heat control
 HEAT_CAUTION = 0.03
 HEAT_DANGER = 0.15
