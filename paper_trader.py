@@ -23,7 +23,7 @@ TRAILING_STOP_MID     = 0.15   # 15% when up 10-20%
 TRAILING_STOP_TIGHT   = 0.10   # 10% when up 20%+
 
 # Take profit
-TAKE_PROFIT_PCT = 0.25   # sell at 25% gain
+TAKE_PROFIT_PCT = 0.35   # sell at 35% gain
 
 # Heat control thresholds
 HEAT_CAUTION_DD  = 0.03   # 3% drawdown from peak
