@@ -12,7 +12,8 @@ from config import (
     STARTING_BALANCE_TAO, MAX_POSITIONS, MAX_POSITION_PCT,
     RESERVE_PCT, MAX_TRADES_PER_CYCLE, MAX_TRADES_PER_DAY,
     MIN_SCORE_ENTRY, MAX_SLIPPAGE_PCT, RAO_PER_TAO,
-    WATCHMAN_MIN_SCORE, SUBNET_BLACKLIST
+    WATCHMAN_MIN_SCORE, SUBNET_BLACKLIST,
+    HARD_STOP_LOSS_PCT
 )
 
 BOT_NAME = "HUGO"
@@ -316,6 +317,10 @@ class PaperTrader:
 
             # Calculate gain once, used by both take-profit and trailing stop
             gain_from_entry = (current_price - entry_price) / entry_price if entry_price > 0 else 0
+
+            # HARD STOP LOSS: highest priority exit - fires on every update regardless of hold time
+            if gain_from_entry <= -HARD_STOP_LOSS_PCT:
+                exit_reason = f"stop loss ({gain_from_entry:.1%} from entry)"
 
             # Take profit: sell at 25% gain
             if gain_from_entry >= TAKE_PROFIT_PCT:
