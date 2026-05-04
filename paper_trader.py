@@ -18,9 +18,12 @@ from config import (
 BOT_NAME = "HUGO"
 
 # Adaptive trailing stop thresholds
-TRAILING_STOP_DEFAULT = 0.22   # 22% drop from peak
-TRAILING_STOP_MID     = 0.15   # 15% when up 10-20%
-TRAILING_STOP_TIGHT   = 0.10   # 10% when up 20%+
+TRAILING_STOP_DEFAULT  = 0.22   # 22% drop from peak
+TRAILING_STOP_TIER_10  = 0.08   # 8% when up 10-20%
+TRAILING_STOP_TIER_20  = 0.08   # 8% when up 20-30%
+TRAILING_STOP_TIER_30  = 0.07   # 7% when up 30-40%
+TRAILING_STOP_TIER_40  = 0.06   # 6% when up 40-50%
+TRAILING_STOP_TIER_50  = 0.05   # 5% when up 50%+
 
 # Take profit
 TAKE_PROFIT_PCT = 0.35   # sell at 35% gain
@@ -323,10 +326,16 @@ class PaperTrader:
                 drop_from_peak = (peak_price - current_price) / peak_price
                 peak_gain = (peak_price - entry_price) / entry_price
 
-                if peak_gain >= 0.20:
-                    active_stop = TRAILING_STOP_TIGHT
+                if peak_gain >= 0.50:
+                    active_stop = TRAILING_STOP_TIER_50
+                elif peak_gain >= 0.40:
+                    active_stop = TRAILING_STOP_TIER_40
+                elif peak_gain >= 0.30:
+                    active_stop = TRAILING_STOP_TIER_30
+                elif peak_gain >= 0.20:
+                    active_stop = TRAILING_STOP_TIER_20
                 elif peak_gain >= 0.10:
-                    active_stop = TRAILING_STOP_MID
+                    active_stop = TRAILING_STOP_TIER_10
                 elif peak_gain > 0:
                     active_stop = TRAILING_STOP_DEFAULT
                 elif hours_held >= MIN_HOLD_HOURS:
