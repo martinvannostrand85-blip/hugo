@@ -66,6 +66,9 @@ WATCHMAN_MIN_SCORE = 40
 # Subnet blacklist - skip these netuids entirely
 SUBNET_BLACKLIST = [111]
 
+# Pool-depth position sizing cap - Framework v2.2 Section 6.3
+POOL_DEPTH_POSITION_PCT = 0.015  # 1.5% of pool depth
+
 # Heat control
 HEAT_CAUTION = 0.03
 HEAT_DANGER = 0.15

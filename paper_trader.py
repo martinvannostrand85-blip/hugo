@@ -13,7 +13,7 @@ from config import (
     RESERVE_PCT, MAX_TRADES_PER_CYCLE, MAX_TRADES_PER_DAY,
     MIN_SCORE_ENTRY, MAX_SLIPPAGE_PCT, RAO_PER_TAO,
     WATCHMAN_MIN_SCORE, SUBNET_BLACKLIST,
-    HARD_STOP_LOSS_PCT
+    HARD_STOP_LOSS_PCT, POOL_DEPTH_POSITION_PCT
 )
 
 BOT_NAME = "HUGO"
@@ -450,7 +450,21 @@ class PaperTrader:
                     netuid = candidate["netuid"]
                     if netuid not in snap_map:
                         continue
-                    self._execute_buy(netuid, position_size, snap_map[netuid], candidate)
+
+                    # Pool-depth position sizing cap (Framework v2.2 Section 6.3)
+                    pool_tao = candidate.get("pool_tao", 0)
+                    if not pool_tao or pool_tao <= 0:
+                        print(f"[{BOT_NAME}] SKIP BUY SN{netuid}: missing or invalid pool_tao, cannot size position")
+                        continue
+                    pool_cap = pool_tao * POOL_DEPTH_POSITION_PCT
+                    adjusted_size = min(position_size, pool_cap)
+                    if adjusted_size < 0.1:
+                        print(f"[{BOT_NAME}] SKIP BUY SN{netuid}: adjusted size {adjusted_size:.4f} TAO < 0.1 TAO (pool {pool_tao:.0f} TAO, cap {pool_cap:.2f} TAO)")
+                        continue
+                    if adjusted_size < position_size:
+                        print(f"[{BOT_NAME}] POOL CAP SN{netuid}: size {position_size:.2f} -> {adjusted_size:.2f} TAO (pool {pool_tao:.0f} TAO, 1.5% cap = {pool_cap:.2f} TAO)")
+
+                    self._execute_buy(netuid, adjusted_size, snap_map[netuid], candidate)
                     trades_today += 1
                     trades_this_cycle += 1
 
